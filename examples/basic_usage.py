@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 """Example usage of the GlossBERT WSD spaCy component."""
 
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath("."))
+import logging
 
 import spacy
 
@@ -13,6 +10,12 @@ from spacy_glossbert import get_synset_info
 
 def main() -> None:
     """Demonstrate basic usage of the GlossBERT WSD component."""
+    # Configure logging to see debug messages from the component
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
+
     # Load spaCy with the English model
     print("Loading spaCy model...")
     nlp = spacy.load("en_core_web_sm")
@@ -21,7 +24,7 @@ def main() -> None:
     print("Adding GlossBERT WSD component...")
     nlp.add_pipe(
         "glossbert_wsd",
-        config={"pos_filter": ["NOUN", "VERB"], "supervision": False, "debug": True},
+        config={"pos_filter": ["NOUN", "VERB"], "supervision": False},
         last=True,
     )
 

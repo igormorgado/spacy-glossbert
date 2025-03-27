@@ -13,7 +13,7 @@ Make sure you have installed the package and its dependencies first:
 
 ```bash
 # Install from PyPI
-pip install glossbert-wsd
+pip install spacy-glossbert
 
 # Or install from the current directory in development mode
 pip install -e ..

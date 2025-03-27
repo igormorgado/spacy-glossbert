@@ -68,7 +68,6 @@ nlp.add_pipe(
     config={
         "pos_filter": ["NOUN", "VERB", "ADJ"],  # Part-of-speech tags to process
         "supervision": True,  # Highlight the target word in context
-        "debug": False,  # Print debug information
         "model_name": "kanishka/GlossBERT"  # HuggingFace model name/path
     }
 )

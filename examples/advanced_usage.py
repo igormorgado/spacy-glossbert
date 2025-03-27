@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 """Advanced usage of the GlossBERT WSD spaCy component."""
 
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath("."))
-
 import logging
 from typing import Dict, List
 
@@ -38,7 +33,6 @@ def setup_custom_pipeline() -> spacy.Language:
     config = {
         "pos_filter": ["NOUN", "VERB", "ADJ"],  # Add adjectives
         "supervision": True,
-        "debug": False,
         "model_name": "kanishka/GlossBERT",
     }
     nlp.add_pipe("glossbert_wsd", config=config, last=True)
@@ -110,15 +104,8 @@ def analyze_multiple_senses(text: str, nlp: spacy.Language) -> List[Dict]:
     # Get the GlossBERT component
     component = nlp.get_pipe("glossbert_wsd")
 
-    # Enable debug mode temporarily
-    original_debug = component.debug
-    component.debug = True
-
     # Process the text
     doc = nlp(text)
-
-    # Reset debug mode
-    component.debug = original_debug
 
     # Collect multiple senses for each word
     results = []

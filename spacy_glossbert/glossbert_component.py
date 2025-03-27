@@ -2,11 +2,12 @@
 
 import logging
 from functools import lru_cache
-from typing import Any, Callable, List, Optional, cast
+from typing import Callable, List, Optional, cast
 
 import nltk
 import torch
 from nltk.corpus import wordnet as wn
+from nltk.corpus.reader.wordnet import Synset
 from spacy.language import Language
 from spacy.tokens import Doc, Token
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
@@ -35,7 +36,7 @@ def has_glossbert_wsd(doc: Doc) -> bool:
 
 
 @lru_cache(maxsize=2048)
-def get_synsets(word: str, pos: str) -> List[Any]:
+def get_synsets(word: str, pos: str) -> List[Synset]:
     """Get WordNet synsets for a word with a given part of speech.
 
     Args:
@@ -45,7 +46,7 @@ def get_synsets(word: str, pos: str) -> List[Any]:
     Returns:
         A list of WordNet synsets
     """
-    return cast(List[Any], wn.synsets(word, pos=pos))
+    return cast(List[Synset], wn.synsets(word))
 
 
 class GlossBertWSD:
@@ -67,13 +68,11 @@ class GlossBertWSD:
             pos_filter: List of POS tags to process (defaults to ["NOUN", "VERB"])
             supervision: Whether to use supervision text in context
                 (highlighting the target word)
-            debug: Whether to print debug information
             model_name: HuggingFace model name/path for GlossBERT
         """
         self.name = name
         self.pos_filter = pos_filter or ["NOUN", "VERB"]
         self.supervision = supervision
-        self.debug = debug
         self.model_name = model_name
 
         # Map spaCy POS tags to WordNet POS tags
@@ -111,7 +110,9 @@ class GlossBertWSD:
 
             # Skip tokens with POS tags not in our filter
             if token.pos_ not in self.pos_filter:
-                logger.debug(f"PoS tag {token.pos_} not in {self.pos_filter}. Skipping...")
+                logger.debug(
+                    f"PoS tag {token.pos_} not in {self.pos_filter}. Skipping..."
+                )
                 continue
 
             # Get corresponding WordNet POS tag
@@ -132,7 +133,9 @@ class GlossBertWSD:
             logger.debug(f"{len(synsets)} Synsets: {synsets}")
 
             # Filter synsets to only those with matching POS
-            valid_synsets = [synset for synset in synsets if synset.pos() == wn_pos]
+            valid_synsets = [
+                synset for synset in synsets if synset and synset.pos() == wn_pos
+            ]
 
             if not valid_synsets:
                 logger.debug(f"No valid synsets found for {token.text}. Skipping...")
@@ -190,7 +193,6 @@ class GlossBertWSD:
     default_config={
         "pos_filter": ["NOUN", "VERB"],
         "supervision": False,
-        "debug": False,
         "model_name": "kanishka/GlossBERT",
     },
 )
