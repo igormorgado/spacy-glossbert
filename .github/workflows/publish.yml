@@ -32,6 +32,10 @@ jobs:
           pip install -r requirements-dev.txt
           pip install build twine
 
+      - name: Download NLTK data
+        run: |
+          python -m nltk.downloader wordnet
+
       - name: Run tests
         run: |
           make all
