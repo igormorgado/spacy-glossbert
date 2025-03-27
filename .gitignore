@@ -27,7 +27,7 @@ MANIFEST
 lessons.md
 .cursorrules
 memory.md
-
+build-env
 # Unit test / coverage reports
 htmlcov/
 .tox/

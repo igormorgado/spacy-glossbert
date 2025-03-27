@@ -90,10 +90,10 @@ This project is licensed under the GNU General Public License v2.0 (GPLv2).
 
 ## Credits
 
-- GlossBERT model: [Loureiro & Jorge, 2019](https://aclanthology.org/D19-1355/)
+- GlossBERT model: [Huang et al](https://aclanthology.org/D19-1355/)
 - spaCy: [Explosion AI](https://spacy.io/)
 - WordNet: [Princeton University](https://wordnet.princeton.edu/) 
 
 ## Author
 
-John Doe <john.doe@example.com> 
+Igor Morgado <morgado.igor@gmail.com> 
