@@ -2,6 +2,7 @@
 
 import os
 import sys
+import nltk
 
 sys.path.insert(0, os.path.abspath("."))
 
@@ -15,6 +16,12 @@ from spacy.tokens import Token
 from spacy_glossbert import (
     create_glossbert_wsd_component,
 )
+
+# Ensure NLTK wordnet is downloaded
+try:
+    nltk.data.find("corpora/wordnet")
+except LookupError:
+    nltk.download("wordnet")
 
 if not Language.has_factory("glossbert_wsd"):
     Language.factory("glossbert_wsd")(create_glossbert_wsd_component)

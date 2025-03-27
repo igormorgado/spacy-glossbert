@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spacy-glossbert"
-version = "0.1.0"
+version = "0.1.1"
 authors = [
     {name = "Igor Morgado", email = "morgado.igor@gmail.com"},
 ]
