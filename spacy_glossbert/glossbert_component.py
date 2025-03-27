@@ -1,5 +1,6 @@
 """GlossBERT Word Sense Disambiguation spaCy component."""
 
+import logging
 from functools import lru_cache
 from typing import Any, Callable, List, Optional, cast
 
@@ -9,6 +10,9 @@ from nltk.corpus import wordnet as wn
 from spacy.language import Language
 from spacy.tokens import Doc, Token
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 # Register custom extension for tokens to store wordnet synsets
 if not Token.has_extension("glossbert_synset"):
@@ -102,18 +106,17 @@ class GlossBertWSD:
             The processed document with synsets attached to tokens
         """
         if self.debug:
-            print("Processing document with GlossBERT WSD")
+            logger.debug("Processing document with GlossBERT WSD")
 
         for token in doc:
             if self.debug:
-                print(f"DEBUG: Token.text: {token.text}")
+                logger.debug(f"Token.text: {token.text}")
 
             # Skip tokens with POS tags not in our filter
             if token.pos_ not in self.pos_filter:
                 if self.debug:
-                    print(
-                        f"DEBUG: PoS tag {token.pos_} not in {self.pos_filter}. "
-                        f"Skipping...\n"
+                    logger.debug(
+                        f"PoS tag {token.pos_} not in {self.pos_filter}. Skipping..."
                     )
                 continue
 
@@ -121,38 +124,35 @@ class GlossBertWSD:
             wn_pos = self.pos_map.get(token.pos_)
             if not wn_pos:
                 if self.debug:
-                    print(f"DEBUG: No WordNet Pos found for {token.text}. Skipping...")
-                    print()
+                    logger.debug(f"No WordNet Pos found for {token.text}. Skipping...")
                 continue
 
             if self.debug:
-                print(f"DEBUG: WordNet Pos {wn_pos}")
+                logger.debug(f"WordNet Pos {wn_pos}")
 
             # Get WordNet synsets for this token
             synsets = get_synsets(token.text.lower(), pos=wn_pos)
             if not synsets:
                 token._.glossbert_synset = None
                 if self.debug:
-                    print(f"DEBUG: No synsets found for {token.text}. Skipping...")
-                    print()
+                    logger.debug(f"No synsets found for {token.text}. Skipping...")
                 continue
 
             if self.debug:
-                print(f"DEBUG: {len(synsets)} Synsets:", synsets)
+                logger.debug(f"{len(synsets)} Synsets: {synsets}")
 
             # Filter synsets to only those with matching POS
             valid_synsets = [synset for synset in synsets if synset.pos() == wn_pos]
 
             if not valid_synsets:
                 if self.debug:
-                    print(
-                        f"DEBUG: No valid synsets found for {token.text}. Skipping..."
+                    logger.debug(
+                        f"No valid synsets found for {token.text}. Skipping..."
                     )
-                    print()
                 continue
 
             if self.debug:
-                print(f"DEBUG: {len(valid_synsets)} Valid synsets", valid_synsets)
+                logger.debug(f"{len(valid_synsets)} Valid synsets: {valid_synsets}")
 
             # Prepare inputs for each candidate sense
             inputs = []
@@ -174,7 +174,7 @@ class GlossBertWSD:
                 input_text = f"{context_text} [SEP] {gloss}"
 
                 if self.debug:
-                    print(f"DEBUG: synset: {synset}, Inputs: {input_text}")
+                    logger.debug(f"synset: {synset}, Inputs: {input_text}")
 
                 # Tokenize input for the model
                 tokenized_input = self.tokenizer(
@@ -193,13 +193,10 @@ class GlossBertWSD:
             # Select the best-scoring sense
             best_sense = max(scores, key=lambda x: x[1])[0]
             if self.debug:
-                print("DEBUG: Best Word Sense:", best_sense)
+                logger.debug(f"Best Word Sense: {best_sense}")
 
             # Store the best sense in the token's custom attribute
             token._.glossbert_synset = best_sense
-
-            if self.debug:
-                print()
 
         return doc
 
