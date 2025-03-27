@@ -21,7 +21,7 @@ def main() -> None:
     print("Adding GlossBERT WSD component...")
     nlp.add_pipe(
         "glossbert_wsd",
-        config={"pos_filter": ["NOUN", "VERB"], "supervision": True, "debug": False},
+        config={"pos_filter": ["NOUN", "VERB"], "supervision": False, "debug": True},
         last=True,
     )
 

@@ -57,7 +57,6 @@ class GlossBertWSD:
         name: str = "glossbert_wsd",
         pos_filter: Optional[List[str]] = None,
         supervision: bool = False,
-        debug: bool = False,
         model_name: str = "kanishka/GlossBERT",
     ):
         """Initialize the GlossBERT WSD component.
@@ -105,54 +104,41 @@ class GlossBertWSD:
         Returns:
             The processed document with synsets attached to tokens
         """
-        if self.debug:
-            logger.debug("Processing document with GlossBERT WSD")
+        logger.debug("Processing document with GlossBERT WSD")
 
         for token in doc:
-            if self.debug:
-                logger.debug(f"Token.text: {token.text}")
+            logger.debug(f"Token.text: {token.text}")
 
             # Skip tokens with POS tags not in our filter
             if token.pos_ not in self.pos_filter:
-                if self.debug:
-                    logger.debug(
-                        f"PoS tag {token.pos_} not in {self.pos_filter}. Skipping..."
-                    )
+                logger.debug(f"PoS tag {token.pos_} not in {self.pos_filter}. Skipping...")
                 continue
 
             # Get corresponding WordNet POS tag
             wn_pos = self.pos_map.get(token.pos_)
             if not wn_pos:
-                if self.debug:
-                    logger.debug(f"No WordNet Pos found for {token.text}. Skipping...")
+                logger.debug(f"No WordNet Pos found for {token.text}. Skipping...")
                 continue
 
-            if self.debug:
-                logger.debug(f"WordNet Pos {wn_pos}")
+            logger.debug(f"WordNet Pos {wn_pos}")
 
             # Get WordNet synsets for this token
             synsets = get_synsets(token.text.lower(), pos=wn_pos)
             if not synsets:
                 token._.glossbert_synset = None
-                if self.debug:
-                    logger.debug(f"No synsets found for {token.text}. Skipping...")
+                logger.debug(f"No synsets found for {token.text}. Skipping...")
                 continue
 
-            if self.debug:
-                logger.debug(f"{len(synsets)} Synsets: {synsets}")
+            logger.debug(f"{len(synsets)} Synsets: {synsets}")
 
             # Filter synsets to only those with matching POS
             valid_synsets = [synset for synset in synsets if synset.pos() == wn_pos]
 
             if not valid_synsets:
-                if self.debug:
-                    logger.debug(
-                        f"No valid synsets found for {token.text}. Skipping..."
-                    )
+                logger.debug(f"No valid synsets found for {token.text}. Skipping...")
                 continue
 
-            if self.debug:
-                logger.debug(f"{len(valid_synsets)} Valid synsets: {valid_synsets}")
+            logger.debug(f"{len(valid_synsets)} Valid synsets: {valid_synsets}")
 
             # Prepare inputs for each candidate sense
             inputs = []
@@ -173,8 +159,7 @@ class GlossBertWSD:
                 # Format input for GlossBERT
                 input_text = f"{context_text} [SEP] {gloss}"
 
-                if self.debug:
-                    logger.debug(f"synset: {synset}, Inputs: {input_text}")
+                logger.debug(f"synset: {synset}, Inputs: {input_text}")
 
                 # Tokenize input for the model
                 tokenized_input = self.tokenizer(
@@ -192,8 +177,7 @@ class GlossBertWSD:
 
             # Select the best-scoring sense
             best_sense = max(scores, key=lambda x: x[1])[0]
-            if self.debug:
-                logger.debug(f"Best Word Sense: {best_sense}")
+            logger.debug(f"Best Word Sense: {best_sense}")
 
             # Store the best sense in the token's custom attribute
             token._.glossbert_synset = best_sense
@@ -215,7 +199,6 @@ def create_glossbert_wsd_component(
     name: str,
     pos_filter: List[str],
     supervision: bool = False,
-    debug: bool = False,
     model_name: str = "kanishka/GlossBERT",
 ) -> Callable[[Doc], Doc]:
     """Create a GlossBERT Word Sense Disambiguation component.
@@ -225,7 +208,6 @@ def create_glossbert_wsd_component(
         name: The name of the component in the pipeline
         pos_filter: List of POS tags to process (defaults to ["NOUN", "VERB"])
         supervision: Whether to use supervision text in context
-        debug: Whether to print debug information
         model_name: HuggingFace model name/path for GlossBERT
 
     Returns:
@@ -236,6 +218,5 @@ def create_glossbert_wsd_component(
         name=name,
         pos_filter=pos_filter,
         supervision=supervision,
-        debug=debug,
         model_name=model_name,
     )
