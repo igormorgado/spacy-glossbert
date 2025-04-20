@@ -3,7 +3,10 @@
 from typing import Any, Dict, List
 
 from spacy import displacy
-from spacy.tokens import Doc
+from spacy.tokens import Doc, Token
+
+import nltk
+from nltk.corpus import wordnet as wn
 
 
 def prepare_entities_for_visualization(doc: Doc) -> List[Dict[str, Any]]:
@@ -17,8 +20,9 @@ def prepare_entities_for_visualization(doc: Doc) -> List[Dict[str, Any]]:
     """
     entities = []
     for token in doc:
-        synset = token._.get("glossbert_synset")
-        if synset:
+        synset_name = token._.get("glossbert_synset")
+        if synset_name:
+            synset = wn.synset(synset_name)
             entities.append(
                 {
                     "start": token.idx,
@@ -50,6 +54,39 @@ def visualize_wsd(doc: Doc, style: str = "ent") -> None:
     displacy.render(doc, style=style)
 
 
+def get_synset_from_name(synset_name: str | None) -> nltk.corpus.reader.wordnet.Synset | None:
+    """Get synset object from a synset name.
+
+    Args:
+        synset_name: A synset name as string.
+
+    Returns:
+        synset: a wordnet synset object. (or None if no synset is associated).
+
+    Raises:
+        WordNetError: If given synset_name does not exist.
+    """
+    if synset_name is None:
+        return None
+    return wn.synset(synset_name)
+
+
+def get_synset(token: Token) -> nltk.corpus.reader.wordnet.Synset | None:
+    """Get spacy token synset object.
+
+    Args:
+        token: a spaCy token.
+
+    Returns:
+        synset: a wordnet synset object. (or None if no synset is associated)
+    """
+    synset_name = token._.get("glossbert_synset")
+    if synset_name:
+        return get_synset_from_name(synset_name)
+    else:
+        return None
+
+
 def get_synset_info(doc: Doc) -> List[Dict[str, str]]:
     """Get information about disambiguated word senses in a document.
 
@@ -62,7 +99,7 @@ def get_synset_info(doc: Doc) -> List[Dict[str, str]]:
     results = []
 
     for token in doc:
-        synset = token._.get("glossbert_synset")
+        synset = get_synset(token)
         if synset:
             results.append(
                 {

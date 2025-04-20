@@ -182,8 +182,10 @@ class GlossBertWSD:
             best_sense = max(scores, key=lambda x: x[1])[0]
             logger.debug(f"Best Word Sense: {best_sense}")
 
+            synset_name = best_sense.name()
+
             # Store the best sense in the token's custom attribute
-            token._.glossbert_synset = best_sense
+            token._.glossbert_synset = synset_name
 
         return doc
 
@@ -195,6 +197,8 @@ class GlossBertWSD:
         "supervision": False,
         "model_name": "kanishka/GlossBERT",
     },
+    requires=['token.tag'],
+    assigns=['token._.glossbert_synset'],
 )
 def create_glossbert_wsd_component(
     nlp: Language,
