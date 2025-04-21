@@ -25,7 +25,7 @@ python -m spacy download en_core_web_sm
 
 ```python
 import spacy
-from spacy_glossbert import has_glossbert_wsd, get_synset_info
+from spacy_glossbert import has_glossbert_wsd, get_synset_info, get_synset_from_name
 
 # Load spaCy with the GlossBERT component
 nlp = spacy.load("en_core_web_sm")

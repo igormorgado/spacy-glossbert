@@ -12,7 +12,7 @@ from .utils import (
     get_synset,
     get_synset_from_name,
     get_synset_info,
-    prepare_entities_for_visualization,
+    prepare_data_for_visualization,
     visualize_wsd,
 )
 
@@ -34,7 +34,8 @@ __all__ = [
     "create_glossbert_wsd_component",
     "has_glossbert_wsd",
     "get_synset",
+    "get_synset_from_name",
     "get_synset_info",
-    "prepare_entities_for_visualization",
+    "prepare_data_for_visualization",
     "visualize_wsd",
 ]

@@ -68,8 +68,8 @@ def get_synset_info(doc: Doc) -> List[Dict[str, str]]:
     return results
 
 
-def prepare_entities_for_visualization(doc: Doc) -> List[Dict[str, Any]]:
-    """Prepare entities for visualization with displaCy.
+def prepare_data_for_visualization(doc: Doc, style: str = "ent") -> List[Dict[str, Any]]:
+    """Prepare data for visualization with displaCy.
 
     Args:
         doc: The spaCy document processed with GlossBERT WSD
@@ -81,34 +81,70 @@ def prepare_entities_for_visualization(doc: Doc) -> List[Dict[str, Any]]:
     for token in doc:
         synset = get_synset(token)
         if synset:
-            entities.append(
-                {
-                    "start": token.idx,
-                    "end": token.idx + len(token.text),
-                    "label": synset.name(),
-                }
-            )
+            if style == "span":
+                entities.append(
+                    {
+                        "start_token": token.i,
+                        "end_token": token.i + 1,
+                        "label": synset.name(),
+                    }
+                )
+            elif style == "ent":
+                entities.append(
+                    {
+                        "start": token.idx,
+                        "end": token.idx + len(token.text),
+                        "label": synset.name(),
+                    }
+                )
+
 
     return entities
 
 
-def visualize_wsd(doc: Doc, style: str = "ent") -> None:
+def visualize_wsd(
+    doc: Doc,
+    style: str = "ent", 
+    title: str | None = None, 
+    options: dict | None = None
+) -> None:
     """Visualize word sense disambiguation results.
 
     Args:
         doc: The spaCy document processed with GlossBERT WSD
         style: The visualization style to use
+        title: A title for the generated plot
+        options: options to pass to displacy
 
     Returns:
         None
     """
-    # Prepare entities based on glossbert synsets
-    entities = prepare_entities_for_visualization(doc)
+    if style not in ["ent", "span"]:
+        raise ValueError("style must be `ent` or `span`")
 
     # Add entities to the document's user data
-    doc.user_data["ents"] = entities
+    if style == "span":
+        data = {
+            "text": doc.text,
+            "spans": prepare_data_for_visualization(doc, style=style),
+            "tokens": [token.text for token in doc],
+        }
+    elif style == "ent":
+        data = {
+            "text": doc.text,
+            "ents": prepare_data_for_visualization(doc, style=style),
+        }
+
+    if title is not None:
+        data["title"] = title
 
     # Visualize with displaCy
-    displacy.render(doc, style=style)
+    displacy_params = {
+        "style": style,
+        "manual": True,
+    }
+    if options is not None:
+        displacy_params["options"] = options
 
+    displacy.render(data, **displacy_params)
 
