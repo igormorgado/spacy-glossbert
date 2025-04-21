@@ -34,18 +34,19 @@ nlp.add_pipe("glossbert_wsd", last=True)
 # Process a text
 doc = nlp("He went to the bank to deposit money.")
 
-# Check if the document has been processed with GlossBERT
 if has_glossbert_wsd(doc):
     # Print disambiguated senses
     for token in doc:
-        synset = token._.glossbert_synset
+        synset_name = token._.glossbert_synset
+        synset = get_synset_from_name(synset_name)
         if synset:
-            print(f"{token.text}: {token.pos_} -- {synset.name()} - {synset.definition()}")
+            print(f"{token.i}:{token.text}: {token.pos_} -- {synset.name()} - {synset.definition()}")
+
 
     # Alternative: Get all sense information as a list of dictionaries
     senses = get_synset_info(doc)
     for sense in senses:
-        print(f"{sense['text']}: {sense['synset']} - {sense['definition']}")
+        print(f"{sense['text']}: {sense['synset']}")
 ```
 
 ### Visualization

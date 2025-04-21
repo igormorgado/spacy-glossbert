@@ -9,51 +9,6 @@ import nltk
 from nltk.corpus import wordnet as wn
 
 
-def prepare_entities_for_visualization(doc: Doc) -> List[Dict[str, Any]]:
-    """Prepare entities for visualization with displaCy.
-
-    Args:
-        doc: The spaCy document processed with GlossBERT WSD
-
-    Returns:
-        A list of entity dictionaries for displaCy visualization
-    """
-    entities = []
-    for token in doc:
-        synset_name = token._.get("glossbert_synset")
-        if synset_name:
-            synset = wn.synset(synset_name)
-            entities.append(
-                {
-                    "start": token.idx,
-                    "end": token.idx + len(token.text),
-                    "label": synset.name(),
-                }
-            )
-
-    return entities
-
-
-def visualize_wsd(doc: Doc, style: str = "ent") -> None:
-    """Visualize word sense disambiguation results.
-
-    Args:
-        doc: The spaCy document processed with GlossBERT WSD
-        style: The visualization style to use
-
-    Returns:
-        None
-    """
-    # Prepare entities based on glossbert synsets
-    entities = prepare_entities_for_visualization(doc)
-
-    # Add entities to the document's user data
-    doc.user_data["ents"] = entities
-
-    # Visualize with displaCy
-    displacy.render(doc, style=style)
-
-
 def get_synset_from_name(synset_name: str | None) -> nltk.corpus.reader.wordnet.Synset | None:
     """Get synset object from a synset name.
 
@@ -111,3 +66,49 @@ def get_synset_info(doc: Doc) -> List[Dict[str, str]]:
             )
 
     return results
+
+
+def prepare_entities_for_visualization(doc: Doc) -> List[Dict[str, Any]]:
+    """Prepare entities for visualization with displaCy.
+
+    Args:
+        doc: The spaCy document processed with GlossBERT WSD
+
+    Returns:
+        A list of entity dictionaries for displaCy visualization
+    """
+    entities = []
+    for token in doc:
+        synset = get_synset(token)
+        if synset:
+            entities.append(
+                {
+                    "start": token.idx,
+                    "end": token.idx + len(token.text),
+                    "label": synset.name(),
+                }
+            )
+
+    return entities
+
+
+def visualize_wsd(doc: Doc, style: str = "ent") -> None:
+    """Visualize word sense disambiguation results.
+
+    Args:
+        doc: The spaCy document processed with GlossBERT WSD
+        style: The visualization style to use
+
+    Returns:
+        None
+    """
+    # Prepare entities based on glossbert synsets
+    entities = prepare_entities_for_visualization(doc)
+
+    # Add entities to the document's user data
+    doc.user_data["ents"] = entities
+
+    # Visualize with displaCy
+    displacy.render(doc, style=style)
+
+

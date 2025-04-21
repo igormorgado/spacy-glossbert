@@ -190,16 +190,16 @@ class GlossBertWSD:
         return doc
 
 
-@Language.factory(
-    "glossbert_wsd",
-    default_config={
-        "pos_filter": ["NOUN", "VERB"],
-        "supervision": False,
-        "model_name": "kanishka/GlossBERT",
-    },
-    requires=['token.tag'],
-    assigns=['token._.glossbert_synset'],
-)
+# @Language.factory(
+#     "glossbert_wsd",
+#     default_config={
+#         "pos_filter": ["NOUN", "VERB"],
+#         "supervision": False,
+#         "model_name": "kanishka/GlossBERT",
+#     },
+#     requires=['token.tag'],
+#     assigns=['token._.glossbert_synset'],
+# )
 def create_glossbert_wsd_component(
     nlp: Language,
     name: str,

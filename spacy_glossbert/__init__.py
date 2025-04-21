@@ -17,7 +17,17 @@ from .utils import (
 )
 
 if not Language.has_factory("glossbert_wsd"):
-    Language.factory("glossbert_wsd")(create_glossbert_wsd_component)
+    Language.factory(
+        "glossbert_wsd",
+        default_config={
+            "pos_filter": ["NOUN", "VERB"],
+            "supervision": False,
+            "model_name": "kanishka/GlossBERT",
+        },
+        requires=['token.tag'],
+        assigns=['token._.glossbert_synset'],
+    )(create_glossbert_wsd_component)
+    # Language.factory("glossbert_wsd")(create_glossbert_wsd_component)
 
 __all__ = [
     "GlossBertWSD",
